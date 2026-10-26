@@ -1,0 +1,6 @@
+Flask>=3.0
+Flask-SocketIO>=5.3
+python-socketio>=5.11
+dnspython>=2.6
+scapy>=2.5
+eventlet>=0.36

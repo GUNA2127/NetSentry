@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetSentry :: unified recon console</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">◈</span>
+    <div class="brand-text">
+      <span class="brand-name">NetSentry</span>
+      <span class="brand-sub">unified recon console</span>
+    </div>
+  </div>
+  <div class="status-cluster">
+    <div class="status-dot" id="scapyStatus" title="scapy availability"></div>
+    <span class="status-label" id="scapyLabel">checking capture engine…</span>
+  </div>
+</header>
+
+<nav class="tabbar" id="tabbar">
+  <button class="tab active" data-tab="overview">Overview</button>
+  <button class="tab" data-tab="dns">DNS</button>
+  <button class="tab" data-tab="scan">Port Scan</button>
+  <button class="tab" data-tab="whois">WHOIS</button>
+  <button class="tab" data-tab="ping">Ping / Traceroute</button>
+  <button class="tab" data-tab="ssl">SSL / TLS</button>
+  <button class="tab" data-tab="http">HTTP Headers</button>
+  <button class="tab" data-tab="sniff">Live Capture</button>
+</nav>
+
+<main>
+
+  <!-- OVERVIEW -->
+  <section class="panel active" id="panel-overview">
+    <div class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">All-in-one authorized recon</p>
+        <h1>One console. Every signal.</h1>
+        <p class="hero-desc">DNS, ports, WHOIS, TLS posture, HTTP headers, and live packet capture —
+          run against a single target, or in parallel, without switching tools.</p>
+        <div class="quicktarget">
+          <input type="text" id="globalTarget" placeholder="example.com or 8.8.8.8" autocomplete="off">
+          <button id="runAll" class="btn btn-primary">Run full recon</button>
+        </div>
+        <p class="legal-note">⚠ Only scan systems you own or are explicitly authorized to test.</p>
+      </div>
+      <div class="hero-signal" aria-hidden="true">
+        <svg viewBox="0 0 300 160" class="pulse-svg">
+          <polyline id="pulseLine" points="0,80 300,80" />
+        </svg>
+        <div class="radar">
+          <div class="radar-sweep"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-summary" id="overviewGrid">
+      <div class="sum-card" data-target="dns"><span class="sum-icon">◉</span><span class="sum-title">DNS</span><span class="sum-val" id="ov-dns">—</span></div>
+      <div class="sum-card" data-target="scan"><span class="sum-icon">▤</span><span class="sum-title">Open Ports</span><span class="sum-val" id="ov-scan">—</span></div>
+      <div class="sum-card" data-target="whois"><span class="sum-icon">✎</span><span class="sum-title">Registrar</span><span class="sum-val" id="ov-whois">—</span></div>
+      <div class="sum-card" data-target="ping"><span class="sum-icon">↯</span><span class="sum-title">Latency</span><span class="sum-val" id="ov-ping">—</span></div>
+      <div class="sum-card" data-target="ssl"><span class="sum-icon">🔒</span><span class="sum-title">Cert expiry</span><span class="sum-val" id="ov-ssl">—</span></div>
+      <div class="sum-card" data-target="http"><span class="sum-icon">▦</span><span class="sum-title">Missing headers</span><span class="sum-val" id="ov-http">—</span></div>
+    </div>
+  </section>
+
+  <!-- DNS -->
+  <section class="panel" id="panel-dns">
+    <div class="tool-head">
+      <h2>DNS Lookup</h2>
+      <div class="tool-input"><input type="text" id="dnsTarget" placeholder="hostname"><button class="btn" id="dnsRun">Resolve</button></div>
+    </div>
+    <div class="result-box" id="dnsResult"><p class="placeholder">Records will appear here.</p></div>
+  </section>
+
+  <!-- SCAN -->
+  <section class="panel" id="panel-scan">
+    <div class="tool-head">
+      <h2>TCP Port Scan</h2>
+      <div class="tool-input">
+        <input type="text" id="scanTarget" placeholder="hostname or IP">
+        <select id="scanTop"><option value="100">Top 100 ports</option><option value="common">Common ports only</option></select>
+        <button class="btn" id="scanRun">Scan</button>
+      </div>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="scanProgress"></div></div>
+    <div class="result-box" id="scanResult"><p class="placeholder">Open ports & banners will appear here.</p></div>
+  </section>
+
+  <!-- WHOIS -->
+  <section class="panel" id="panel-whois">
+    <div class="tool-head">
+      <h2>WHOIS Lookup</h2>
+      <div class="tool-input"><input type="text" id="whoisTarget" placeholder="domain.com"><button class="btn" id="whoisRun">Lookup</button></div>
+    </div>
+    <div class="result-box" id="whoisResult"><p class="placeholder">Registration details will appear here.</p></div>
+  </section>
+
+  <!-- PING/TRACEROUTE -->
+  <section class="panel" id="panel-ping">
+    <div class="tool-head">
+      <h2>Ping &amp; Traceroute</h2>
+      <div class="tool-input">
+        <input type="text" id="pingTarget" placeholder="hostname or IP">
+        <button class="btn" id="pingRun">Ping</button>
+        <button class="btn" id="traceRun">Traceroute</button>
+      </div>
+    </div>
+    <div class="result-box" id="pingResult"><p class="placeholder">Latency & route results will appear here.</p></div>
+  </section>
+
+  <!-- SSL -->
+  <section class="panel" id="panel-ssl">
+    <div class="tool-head">
+      <h2>SSL / TLS Certificate</h2>
+      <div class="tool-input"><input type="text" id="sslTarget" placeholder="hostname"><button class="btn" id="sslRun">Check</button></div>
+    </div>
+    <div class="result-box" id="sslResult"><p class="placeholder">Certificate details will appear here.</p></div>
+  </section>
+
+  <!-- HTTP -->
+  <section class="panel" id="panel-http">
+    <div class="tool-head">
+      <h2>HTTP Security Headers</h2>
+      <div class="tool-input"><input type="text" id="httpTarget" placeholder="https://example.com"><button class="btn" id="httpRun">Analyze</button></div>
+    </div>
+    <div class="result-box" id="httpResult"><p class="placeholder">Header posture will appear here.</p></div>
+  </section>
+
+  <!-- SNIFF -->
+  <section class="panel" id="panel-sniff">
+    <div class="tool-head">
+      <h2>Live Packet Capture</h2>
+      <div class="tool-input">
+        <select id="sniffIface"><option value="">auto-select interface</option></select>
+        <input type="text" id="sniffFilter" placeholder="BPF filter e.g. tcp port 443">
+        <button class="btn btn-primary" id="sniffStart">Start capture</button>
+        <button class="btn btn-danger" id="sniffStop" disabled>Stop</button>
+      </div>
+    </div>
+    <div class="sniff-stats" id="sniffStats"></div>
+    <div class="packet-feed" id="packetFeed"></div>
+  </section>
+
+</main>
+
+<footer>
+  <span>NetSentry Toolkit v1.0 — for authorized security testing &amp; learning only.</span>
+</footer>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
